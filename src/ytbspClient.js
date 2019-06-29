@@ -1,17 +1,14 @@
 const {google} = require("googleapis");
 const url = require("url");
 
-const keyFile = require("../oauth2.keys.json");
-const keys = keyFile.installed || keyFile.web;
-
 class YTBSPClient {
-  constructor(dbService) {
+  constructor(dbService, keys) {
     this.dbService = dbService;
     // Validate the redirectUri.  This is a frequent cause of confusion.
-    if (!keys || !keys.redirect_uris || keys.redirect_uris.length === 0) {
-      throw new Error(`The provided keyfile does not define a valid
+    if (!keys.redirect_uris || keys.redirect_uris.length === 0) {
+      throw new Error(`The provided settings.json does not define a valid
       redirect URI. There must be at least one redirect URI defined. Please edit
-      your keyfile, and add a 'redirect_uris' section.`);
+      your settings.json, and add a 'redirect_uris' section.`);
     }
     const redirectUri = keys.redirect_uris.find((uri) => uri.includes("/oauth2callback"));
 

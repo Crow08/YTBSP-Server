@@ -12,7 +12,7 @@ jspm_packages/
 .VSCodeCounter/
 
 # Settings and credentials
-oauth2.keys.json
+settings.json
 .env
 
 # Generated docs

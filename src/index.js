@@ -1,10 +1,13 @@
 const http = require("http");
-const YTBSPClient = require("./ytbspClient");
+const fs = require("fs");
 const url = require("url");
+const YTBSPClient = require("./ytbspClient");
 const DBService = require("./DBService");
 
-const dbService = new DBService();
-dbService.connectDB();
+let settingsPath = "../settings.json";
+let settingsUrl = "";
+let settings = null;
+let dbService = null;
 
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -12,7 +15,87 @@ const scope = [
   "https://www.googleapis.com/auth/userinfo.profile"
 ];
 
+// Parsing command line arguments.
+process.argv.forEach((arg) => {
+  if (arg.match(/^settings_url=.+/u)) {
+    settingsUrl = arg.split("=")[1];
+  } else if (arg.match(/^settings_path=.+/u)) {
+    settingsPath = arg.split("=")[1];
+  }
+});
 
+// Parsing environment variables.
+if (settingsUrl === "" && typeof process.env.settings_url !== "undefined") {
+  settingsUrl = process.env.settings_url;
+}
+if (settingsPath === "" && typeof process.env.settings_path !== "undefined") {
+  settingsPath = process.env.settings_url;
+}
+
+// Validate content of settings file.
+const validateSettings = (() => new Promise((resolve, reject) => {
+  // Check for missing credentials.
+  if ((typeof settings.web === "undefined" && typeof settings.installed === "undefined")) {
+    reject(new Error("Your setting file is missing some necessary information!\n" +
+    "Please check your settings file for missing API credentials.\n" +
+    "Take a look at settings.example.json for reference."));
+  }
+  resolve();
+}));
+
+// Load settings.json file from disc or url.
+const loadSettings = new Promise((resolve, reject) => {
+  fs.access(settingsPath, fs.constants.F_OK, (existsErr) => {
+    // If settings file exists:
+    if (!existsErr) {
+      // Read settings file.
+      fs.readFile(settingsPath, (readErr, rawData) => {
+        if (readErr) {
+          reject(readErr);
+          return;
+        }
+        settings = JSON.parse(rawData);
+        // Check if all necessary settings are set.
+        validateSettings().
+          then(resolve).
+          catch(reject);
+      });
+    // If settingsUrl is set:
+    } else if (settingsUrl.length > 0) {
+      // Download settings file.
+      http.get(settingsUrl, (response) => {
+        response.setEncoding("utf8");
+        let rawData = "";
+        response.on("data", (chunk) => {
+          rawData += chunk;
+        });
+        response.on("end", () => {
+          settings = JSON.parse(rawData);
+          // Check if all necessary settings are set.
+          validateSettings().
+            then(resolve).
+            catch(reject);
+        });
+      }).on("error", (httpErr) => {
+        reject(httpErr);
+      });
+    } else {
+      reject(new Error("Failed to load settings file!\n" +
+        "Please provide a settings file at the default location (\"./settings.json\") " +
+        "or set a path through the \"settings_path\" argument.\n" +
+        "Alternatively you can provide \"settings_url\" as argument to refer a remote settings file."));
+    }
+  });
+});
+
+// Initialize Mongo db connection after config is loaded.
+loadSettings.then(() => {
+  settings.db = settings.db ? settings.db : {};
+  dbService = new DBService(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
+  dbService.connectDB();
+});
+
+// GApi request for subscriptions via ID.
 const getSubscriptionWithID = (req, client, etag) => new Promise((resolve, reject) => {
   const params = new url.URL(req.url, "http://localhost:3000").searchParams;
   const apiReqParam = {
@@ -29,6 +112,7 @@ const getSubscriptionWithID = (req, client, etag) => new Promise((resolve, rejec
     catch(reject);
 });
 
+// Helper function to get all subscriptions for the client with paging.
 const getSubscriptionsRecursively =
 (result, youtube, maxResults, nextPageToken, etag) => new Promise((resolve, reject) => {
   const apiReqParam = {
@@ -56,6 +140,7 @@ const getSubscriptionsRecursively =
     catch(reject);
 });
 
+// GApi request to get all subscriptions for the client.
 const getSubscriptions = (req, client, etag) => new Promise((resolve, reject) => {
   const params = new url.URL(req.url, "http://localhost:3000").searchParams;
   getSubscriptionsRecursively([], client.youtube, params.get("maxResults"), null, etag).
@@ -66,6 +151,7 @@ const getSubscriptions = (req, client, etag) => new Promise((resolve, reject) =>
     catch(reject);
 });
 
+// GApi request to get playlist item information.
 const getPlaylistItems = (req, client, etag) => new Promise((resolve, reject) => {
   const params = new url.URL(req.url, "http://localhost:3000").searchParams;
   const apiReqParam = {
@@ -83,6 +169,7 @@ const getPlaylistItems = (req, client, etag) => new Promise((resolve, reject) =>
     catch(reject);
 });
 
+// GApi request to get video information.
 const getVideoInfo = (req, client, etag) => new Promise((resolve, reject) => {
   const params = new url.URL(req.url, "http://localhost:3000").searchParams;
   const apiReqParam = {
@@ -98,7 +185,7 @@ const getVideoInfo = (req, client, etag) => new Promise((resolve, reject) => {
     catch(reject);
 });
 
-
+// Get client for the script user to make GApi requests.
 const getClient = (request) => new Promise((resolve) => {
   const params = new url.URL(request.url, "http://localhost:3000").searchParams;
   const clientId = params.get("id");
@@ -106,21 +193,22 @@ const getClient = (request) => new Promise((resolve) => {
     dbService.getUser(clientId).
       then((user) => {
         console.log("fetched token for Client!");
-        const client = new YTBSPClient(dbService);
+        const client = new YTBSPClient(dbService, settings.installed || settings.web);
         client.oAuth2Client.credentials = user;
         resolve(client);
       }).
       catch((err) => {
         console.log(err);
         console.log("cant fetch token for Client!");
-        resolve(new YTBSPClient(dbService));
+        resolve(new YTBSPClient(dbService, settings.installed || settings.web));
       });
   } else {
     console.log("new Client!");
-    resolve(new YTBSPClient(dbService));
+    resolve(new YTBSPClient(dbService, settings.installed || settings.web));
   }
 });
 
+// Default handling for Api Requests.
 const routeApiRequest = (func, request, response, client) => {
   func(request, client).
     then((res) => {
@@ -135,6 +223,8 @@ const routeApiRequest = (func, request, response, client) => {
       response.end();
     });
 };
+
+// Handling for unknown request paths.
 const route404 = (request, response) => {
   response.writeHead(404, {"Content-Type": "text/html"});
   response.write("<div style=\"text-align: center;height: 100%;width: 100%;display: table;\">" +
@@ -144,6 +234,7 @@ const route404 = (request, response) => {
   response.end();
 };
 
+// Handling for callback after user has authorized the server app. 
 const routeOAuthCallback = (request, response, client) => {
   client.authenticate(request).
     then((id) => {
@@ -161,6 +252,7 @@ const routeOAuthCallback = (request, response, client) => {
     });
 };
 
+// Start webserver:
 console.log("\x1b[34m%s\x1b[0m", "--------    WebServer is starting!    --------\n");
 http.createServer((request, response) => {
   getClient(request).then((client) => {
@@ -170,7 +262,7 @@ http.createServer((request, response) => {
       path = request.url.substr(0, paramPos);
     }
     switch (path) {
-    case "/getAuth":
+    case "/authUrl":
       response.writeHead(200, {"Content-Type": "text/plain"});
       response.write(client.getAuthUrl(scope));
       response.end();
@@ -178,16 +270,16 @@ http.createServer((request, response) => {
     case "/oauth2callback":
       routeOAuthCallback(request, response, client);
       break;
-    case "/getsubscriptions":
+    case "/subscriptions":
       routeApiRequest(getSubscriptions, request, response, client);
       break;
-    case "/getSubscriptionWithId":
+    case "/subscriptionWithId":
       routeApiRequest(getSubscriptionWithID, request, response, client);
       break;
-    case "/getPlaylistItems":
+    case "/playlistItems":
       routeApiRequest(getPlaylistItems, request, response, client);
       break;
-    case "/getVideoInfo":
+    case "/videoInfo":
       routeApiRequest(getVideoInfo, request, response, client);
       break;
     default:
