@@ -25,15 +25,16 @@ class YTBSPClient {
       "version": "v3"
     });
 
+    // "tokens" update event: Update token in DB.
     this.oAuth2Client.on("tokens", (tokens) => {
-      console.log("tokens update event:\n");
       if (tokens) {
         this.oAuth2Client.getTokenInfo(tokens.access_token).
           then((info) => {
             console.log(info.sub);
             tokens.id = info.sub;
-            dbService.upsertUser(tokens).then(() => {
-              console.log("user saved!");
+            // Save new token with userId to DB.
+            dbService.upsertUser(tokens).catch((err) => {
+              console.log(err);
             });
           }).
           catch((err) => {

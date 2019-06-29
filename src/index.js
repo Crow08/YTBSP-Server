@@ -4,7 +4,7 @@ const url = require("url");
 const YTBSPClient = require("./ytbspClient");
 const DBService = require("./DBService");
 
-let settingsPath = "../settings.json";
+let settingsPath = "./settings.json";
 let settingsUrl = "";
 let settings = null;
 let dbService = null;
@@ -90,9 +90,12 @@ const loadSettings = new Promise((resolve, reject) => {
 
 // Initialize Mongo db connection after config is loaded.
 loadSettings.then(() => {
+  console.log("\x1b[35m%s\x1b[0m", "> Connecting to DB...\n")
   settings.db = settings.db ? settings.db : {};
   dbService = new DBService(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
-  dbService.connectDB();
+  dbService.connectDB().
+    then(() => console.log("\x1b[35m%s\x1b[0m", "> DB connected!\n")).
+    catch((err) => console.log(err));
 });
 
 // GApi request for subscriptions via ID.
@@ -145,7 +148,6 @@ const getSubscriptions = (req, client, etag) => new Promise((resolve, reject) =>
   const params = new url.URL(req.url, "http://localhost:3000").searchParams;
   getSubscriptionsRecursively([], client.youtube, params.get("maxResults"), null, etag).
     then((result) => {
-      console.log("finish");
       resolve(result);
     }).
     catch(reject);
@@ -192,18 +194,18 @@ const getClient = (request) => new Promise((resolve) => {
   if (clientId) {
     dbService.getUser(clientId).
       then((user) => {
-        console.log("fetched token for Client!");
+        // Fetched token for Client.
         const client = new YTBSPClient(dbService, settings.installed || settings.web);
         client.oAuth2Client.credentials = user;
         resolve(client);
       }).
       catch((err) => {
+        // Cant fetch token for Client.
         console.log(err);
-        console.log("cant fetch token for Client!");
         resolve(new YTBSPClient(dbService, settings.installed || settings.web));
       });
   } else {
-    console.log("new Client!");
+    // New Client.
     resolve(new YTBSPClient(dbService, settings.installed || settings.web));
   }
 });
@@ -253,7 +255,7 @@ const routeOAuthCallback = (request, response, client) => {
 };
 
 // Start webserver:
-console.log("\x1b[34m%s\x1b[0m", "--------    WebServer is starting!    --------\n");
+console.log("\x1b[34m%s\x1b[0m", "> WebServer is starting...\n");
 http.createServer((request, response) => {
   getClient(request).then((client) => {
     let path = request.url;
@@ -289,5 +291,5 @@ http.createServer((request, response) => {
   });
 }).listen(
   process.env.PORT || 3000,
-  () => console.log("\x1b[34m%s\x1b[0m", "--------    WebServer successfully started!    --------\n")
+  () => console.log("\x1b[34m%s\x1b[0m", "> WebServer successfully started!\n")
 );
