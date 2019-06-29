@@ -1,0 +1,24 @@
+{
+  "name": "ytbsp-server",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build": "npm install",
+    "start": "node ./src/index.js"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Crow08/YTBSP-server.git"
+  },
+  "author": "Crow08",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Crow08/YTBSP-server/issues"
+  },
+  "homepage": "https://github.com/Crow08/YTBSP-server#readme",
+  "dependencies": {
+    "googleapis": "^40.0.0",
+    "mongodb": "^3.2.7"
+  }
+}

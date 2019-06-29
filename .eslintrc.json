@@ -1,0 +1,40 @@
+{
+    "env": {
+        "es6": true,
+        "node": true
+    },
+    "extends": "eslint:all",
+    "parserOptions": {
+        "ecmaVersion": 9,
+        "sourceType": "module"
+    },
+    "rules": {
+        "semi": 2,
+        "no-console": "off",
+        "no-alert": "off",
+        "no-warning-comments": "off",
+        "array-element-newline": "off",
+        "linebreak-style": "off",
+        "line-comment-position": "off",
+        "multiline-comment-style": "off",
+        "multiline-ternary": "off",
+        "no-extra-parens": "off",
+        "no-inline-comments": "off",
+        "no-magic-numbers": "off",
+        "no-plusplus": "off",
+        "no-process-env": "off",
+        "no-ternary": "off",
+        "object-property-newline": "off",
+        "one-var": "off",
+        "padded-blocks": "off",
+
+        "indent": ["warn", 2],
+        "max-len": ["warn", { "code": 120, "tabWidth": 2 }],
+        "max-lines": ["warn", {"skipBlankLines": true, "skipComments": true}],
+        "max-lines-per-function": ["warn", {"max": 50, "skipBlankLines": true, "skipComments": true}],
+        "max-statements": ["warn", { "max": 25}],
+        "max-params": ["warn", {"max": 6}],
+        "prefer-destructuring": ["warn",{"array": false, "object": true}],
+        "space-before-function-paren": ["warn", "never"]
+    }
+}
