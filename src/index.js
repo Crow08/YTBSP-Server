@@ -90,7 +90,7 @@ const loadSettings = new Promise((resolve, reject) => {
 
 // Initialize Mongo db connection after config is loaded.
 loadSettings.then(() => {
-  console.log("\x1b[35m%s\x1b[0m", "> Connecting to DB...\n")
+  console.log("\x1b[35m%s\x1b[0m", "> Connecting to DB...\n");
   settings.db = settings.db ? settings.db : {};
   dbService = new DBService(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
   dbService.connectDB().
@@ -236,7 +236,7 @@ const route404 = (request, response) => {
   response.end();
 };
 
-// Handling for callback after user has authorized the server app. 
+// Handling for callback after user has authorized the server app.
 const routeOAuthCallback = (request, response, client) => {
   client.authenticate(request).
     then((id) => {
@@ -257,6 +257,17 @@ const routeOAuthCallback = (request, response, client) => {
 // Start webserver:
 console.log("\x1b[34m%s\x1b[0m", "> WebServer is starting...\n");
 http.createServer((request, response) => {
+  // Set CORS headers
+  if (request.method === "OPTIONS") {
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Access-Control-Request-Method", "*");
+    response.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
+    response.setHeader("Access-Control-Allow-Headers", "*");
+    response.writeHead(200);
+    response.end();
+    return;
+  }
+
   getClient(request).then((client) => {
     let path = request.url;
     const paramPos = request.url.indexOf("?");
