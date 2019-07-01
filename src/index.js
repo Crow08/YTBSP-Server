@@ -258,11 +258,11 @@ const routeOAuthCallback = (request, response, client) => {
 console.log("\x1b[34m%s\x1b[0m", "> WebServer is starting...\n");
 http.createServer((request, response) => {
   // Set CORS headers
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Request-Method", "*");
+  response.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
+  response.setHeader("Access-Control-Allow-Headers", "*");
   if (request.method === "OPTIONS") {
-    response.setHeader("Access-Control-Allow-Origin", "*");
-    response.setHeader("Access-Control-Request-Method", "*");
-    response.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
-    response.setHeader("Access-Control-Allow-Headers", "*");
     response.writeHead(200);
     response.end();
     return;
