@@ -197,9 +197,6 @@ http.createServer((request, response) => {
     case "/subscriptions":
       routeApiRequest(YouTubeApiService.getSubscriptions, request, response, client);
       break;
-    case "/subscriptionWithId":
-      routeApiRequest(YouTubeApiService.getSubscriptionWithID, request, response, client);
-      break;
     case "/playlistItems":
       routeApiRequest(YouTubeApiService.getPlaylistItems, request, response, client);
       break;

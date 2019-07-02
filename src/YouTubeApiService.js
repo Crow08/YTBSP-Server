@@ -2,32 +2,12 @@ const url = require("url");
 
 class YouTubeApiService {
 
-  // GApi request for subscriptions via ID.
-  static getSubscriptionWithID(req, client, etag) {
-    return new Promise((resolve, reject) => {
-      const params = new url.URL(req.url, "http://localhost:3000").searchParams;
-      const apiReqParam = {
-        "fields": "items(snippet(resourceId/channelId,title)),pageInfo",
-        "forChannelId": params.get("forChannelId"),
-        "mine": "true",
-        "part": "snippet"
-      };
-      if (etag) {
-        apiReqParam.headers = {"If-None-Match": etag};
-      }
-      client.youtube.subscriptions.list(apiReqParam).
-        then(({data}) => resolve(data)).
-        catch(reject);
-    });
-  }
-
   // GApi request to get subscriptions page for the client.
   static getSubscriptions(req, client, etag) {
     return new Promise((resolve, reject) => {
       const params = new url.URL(req.url, "http://localhost:3000").searchParams;
       const apiReqParam = {
         "fields": "items(snippet(resourceId/channelId,title)),nextPageToken,pageInfo,prevPageToken",
-        "maxResults": params.get("maxResults"),
         "mine": "true",
         "part": "snippet"
       };
@@ -35,7 +15,13 @@ class YouTubeApiService {
         apiReqParam.headers = {"If-None-Match": etag};
       }
       if (params.get("maxResults")) {
-        apiReqParam.pageToken = params.get("maxResults");
+        apiReqParam.maxResults = params.get("maxResults");
+      }
+      if (params.get("nextPageToken")) {
+        apiReqParam.pageToken = params.get("nextPageToken");
+      }
+      if (params.get("forChannelId")) {
+        apiReqParam.forChannelId = params.get("forChannelId");
       }
       client.youtube.subscriptions.list(apiReqParam).
         then(({data}) => {
