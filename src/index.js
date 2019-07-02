@@ -18,7 +18,7 @@ const scope = [
 // Parsing command line arguments.
 process.argv.forEach((arg) => {
   if (arg.match(/^settings_url=.+/u)) {
-    settingsUrl = arg.split("=")[1];
+    settingsUrl = arg.split("=")[1].replace("https://", "http://");
   } else if (arg.match(/^settings_path=.+/u)) {
     settingsPath = arg.split("=")[1];
   }
@@ -26,7 +26,7 @@ process.argv.forEach((arg) => {
 
 // Parsing environment variables.
 if (settingsUrl === "" && typeof process.env.settings_url !== "undefined") {
-  settingsUrl = process.env.settings_url;
+  settingsUrl = process.env.settings_url.replace("https://", "http://");
 }
 if (settingsPath === "" && typeof process.env.settings_path !== "undefined") {
   settingsPath = process.env.settings_url;
