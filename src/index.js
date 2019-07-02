@@ -4,7 +4,7 @@ const url = require("url");
 const YTBSPClient = require("./ytbspClient");
 const DBService = require("./DBService");
 const YouTubeApiService = require("./YouTubeApiService");
-
+const GDriveApiService = require("./GDriveApiService");
 let settingsPath = "./settings.json";
 let settingsUrl = "";
 let settings = null;
@@ -179,7 +179,6 @@ http.createServer((request, response) => {
     response.end();
     return;
   }
-
   getClient(request).then((client) => {
     let path = request.url;
     const paramPos = request.url.indexOf("?");
@@ -206,6 +205,12 @@ http.createServer((request, response) => {
       break;
     case "/videoInfo":
       routeApiRequest(YouTubeApiService.getVideoInfo, request, response, client);
+      break;
+    case "/settingsFile":
+      routeApiRequest(GDriveApiService.settingsFile, request, response, client);
+      break;
+    case "/settingsFileContent":
+      routeApiRequest(GDriveApiService.settingsFileContent, request, response, client);
       break;
     default:
       route404(request, response);

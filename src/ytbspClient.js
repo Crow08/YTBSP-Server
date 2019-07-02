@@ -25,6 +25,11 @@ class YTBSPClient {
       "version": "v3"
     });
 
+    this.drive = google.drive({
+      "auth": this.oAuth2Client,
+      "version": "v3"
+    });
+
     // "tokens" update event: Update token in DB.
     this.oAuth2Client.on("tokens", (tokens) => {
       if (tokens) {
