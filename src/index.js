@@ -115,40 +115,24 @@ const getSubscriptionWithID = (req, client, etag) => new Promise((resolve, rejec
     catch(reject);
 });
 
-// Helper function to get all subscriptions for the client with paging.
-const getSubscriptionsRecursively =
-(result, youtube, maxResults, nextPageToken, etag) => new Promise((resolve, reject) => {
+// GApi request to get subscriptions page for the client.
+const getSubscriptions = (req, client, etag) => new Promise((resolve, reject) => {
+  const params = new url.URL(req.url, "http://localhost:3000").searchParams;
   const apiReqParam = {
     "fields": "items(snippet(resourceId/channelId,title)),nextPageToken,pageInfo,prevPageToken",
-    maxResults,
+    "maxResults": params.get("maxResults"),
     "mine": "true",
     "part": "snippet"
   };
   if (etag) {
     apiReqParam.headers = {"If-None-Match": etag};
   }
-  if (nextPageToken) {
-    apiReqParam.pageToken = nextPageToken;
+  if (params.get("maxResults")) {
+    apiReqParam.pageToken = params.get("maxResults");
   }
-  youtube.subscriptions.list(apiReqParam).
+  client.youtube.subscriptions.list(apiReqParam).
     then(({data}) => {
-      if (data.nextPageToken) {
-        getSubscriptionsRecursively(result.concat(data.items), youtube, maxResults, data.nextPageToken, etag).
-          then(resolve).
-          catch(reject);
-      } else {
-        resolve(result);
-      }
-    }).
-    catch(reject);
-});
-
-// GApi request to get all subscriptions for the client.
-const getSubscriptions = (req, client, etag) => new Promise((resolve, reject) => {
-  const params = new url.URL(req.url, "http://localhost:3000").searchParams;
-  getSubscriptionsRecursively([], client.youtube, params.get("maxResults"), null, etag).
-    then((result) => {
-      resolve(result);
+      resolve(data);
     }).
     catch(reject);
 });
