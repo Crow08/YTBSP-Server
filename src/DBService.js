@@ -107,6 +107,60 @@ class DBService {
         catch(reject);
     });
   }
+
+  upsertSettings(user, settings) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("settings").
+        replaceOne({"id": user.id}, {...settings, "id": user.id}, {"upsert": true}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  removeSettings(user) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("settings").
+        deleteOne({"id": user.id}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  getSettings(user) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("settings").
+        findOne({"id": user.id}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  upsertVideoInfo(user, videoInfo) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("videoInfo").
+        replaceOne({"id": user.id}, {...videoInfo, "id": user.id}, {"upsert": true}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  removeVideoInfo(user) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("videoInfo").
+        deleteOne({"id": user.id}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  getVideoInfo(user) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("videoInfo").
+        findOne({"id": user.id}).
+        then(resolve).
+        catch(reject);
+    });
+  }
 }
 
 module.exports = DBService;
