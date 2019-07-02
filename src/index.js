@@ -153,8 +153,18 @@ const routeOAuthCallback = (request, response, client) => {
   client.authenticate(request).
     then((id) => {
       if (id) {
-        response.writeHead(200, {"Content-Type": "text/plain"});
-        response.write(id);
+        response.writeHead(200, {"Content-Type": "text/html"});
+        response.write(`<script>
+          function receiveMessage(event){
+            if (event.origin !== "http://localhost:3000") {
+              event.source.postMessage("${id}", event.origin);
+              console.log(event);
+              window.close();
+            }
+            
+          }
+          window.addEventListener("message", receiveMessage, false);
+        </script>`);
         response.end();
       }
     }).
