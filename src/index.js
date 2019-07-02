@@ -3,6 +3,7 @@ const fs = require("fs");
 const url = require("url");
 const YTBSPClient = require("./ytbspClient");
 const DBService = require("./DBService");
+const YouTubeApiService = require("./YouTubeApiService");
 
 let settingsPath = "./settings.json";
 let settingsUrl = "";
@@ -88,7 +89,7 @@ const loadSettings = new Promise((resolve, reject) => {
   });
 });
 
-// Initialize Mongo db connection after config is loaded.
+// Load settings from file, then initialize Mongo db connection.
 loadSettings.then(() => {
   console.log("\x1b[35m%s\x1b[0m", "> Connecting to DB...\n");
   settings.db = settings.db ? settings.db : {};
@@ -96,79 +97,6 @@ loadSettings.then(() => {
   dbService.connectDB().
     then(() => console.log("\x1b[35m%s\x1b[0m", "> DB connected!\n")).
     catch((err) => console.log(err));
-});
-
-// GApi request for subscriptions via ID.
-const getSubscriptionWithID = (req, client, etag) => new Promise((resolve, reject) => {
-  const params = new url.URL(req.url, "http://localhost:3000").searchParams;
-  const apiReqParam = {
-    "fields": "items(snippet(resourceId/channelId,title)),pageInfo",
-    "forChannelId": params.get("forChannelId"),
-    "mine": "true",
-    "part": "snippet"
-  };
-  if (etag) {
-    apiReqParam.headers = {"If-None-Match": etag};
-  }
-  client.youtube.subscriptions.list(apiReqParam).
-    then(({data}) => resolve(data)).
-    catch(reject);
-});
-
-// GApi request to get subscriptions page for the client.
-const getSubscriptions = (req, client, etag) => new Promise((resolve, reject) => {
-  const params = new url.URL(req.url, "http://localhost:3000").searchParams;
-  const apiReqParam = {
-    "fields": "items(snippet(resourceId/channelId,title)),nextPageToken,pageInfo,prevPageToken",
-    "maxResults": params.get("maxResults"),
-    "mine": "true",
-    "part": "snippet"
-  };
-  if (etag) {
-    apiReqParam.headers = {"If-None-Match": etag};
-  }
-  if (params.get("maxResults")) {
-    apiReqParam.pageToken = params.get("maxResults");
-  }
-  client.youtube.subscriptions.list(apiReqParam).
-    then(({data}) => {
-      resolve(data);
-    }).
-    catch(reject);
-});
-
-// GApi request to get playlist item information.
-const getPlaylistItems = (req, client, etag) => new Promise((resolve, reject) => {
-  const params = new url.URL(req.url, "http://localhost:3000").searchParams;
-  const apiReqParam = {
-    "fields": "items(snippet(publishedAt,resourceId/videoId,thumbnails(maxres,medium),title))" +
-    ",nextPageToken,pageInfo,prevPageToken",
-    "maxResults": params.get("maxResults"),
-    "part": "snippet",
-    "playlistId": params.get("playlistId").replace(/^UC/u, "UU")
-  };
-  if (etag) {
-    apiReqParam.headers = {"If-None-Match": etag};
-  }
-  client.youtube.playlistItems.list(apiReqParam).
-    then(resolve).
-    catch(reject);
-});
-
-// GApi request to get video information.
-const getVideoInfo = (req, client, etag) => new Promise((resolve, reject) => {
-  const params = new url.URL(req.url, "http://localhost:3000").searchParams;
-  const apiReqParam = {
-    "fields": "items(contentDetails/duration,statistics/viewCount)",
-    "id": params.get("videoId"),
-    "part": "contentDetails,statistics"
-  };
-  if (etag) {
-    apiReqParam.headers = {"If-None-Match": etag};
-  }
-  client.youtube.videos.list(apiReqParam).
-    then(resolve).
-    catch(reject);
 });
 
 // Get client for the script user to make GApi requests.
@@ -268,16 +196,16 @@ http.createServer((request, response) => {
       routeOAuthCallback(request, response, client);
       break;
     case "/subscriptions":
-      routeApiRequest(getSubscriptions, request, response, client);
+      routeApiRequest(YouTubeApiService.getSubscriptions, request, response, client);
       break;
     case "/subscriptionWithId":
-      routeApiRequest(getSubscriptionWithID, request, response, client);
+      routeApiRequest(YouTubeApiService.getSubscriptionWithID, request, response, client);
       break;
     case "/playlistItems":
-      routeApiRequest(getPlaylistItems, request, response, client);
+      routeApiRequest(YouTubeApiService.getPlaylistItems, request, response, client);
       break;
     case "/videoInfo":
-      routeApiRequest(getVideoInfo, request, response, client);
+      routeApiRequest(YouTubeApiService.getVideoInfo, request, response, client);
       break;
     default:
       route404(request, response);
