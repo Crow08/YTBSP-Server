@@ -161,6 +161,24 @@ class DBService {
         catch(reject);
     });
   }
+
+  upsertCachedVideoInfo(info) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("videoInfoCache").
+        replaceOne({"videoId": info.videoId}, info, {"upsert": true}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  getCachedVideoInfo(videoId) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("videoInfoCache").
+        findOne({videoId}).
+        then(resolve).
+        catch(reject);
+    });
+  }
 }
 
 module.exports = DBService;

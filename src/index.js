@@ -5,11 +5,13 @@ const YTBSPClient = require("./ytbspClient");
 const DBService = require("./DBService");
 const YouTubeApiService = require("./YouTubeApiService");
 const StorageService = require("./StorageService");
+const CacheService = require("./CacheService");
 let settingsPath = "./settings.json";
 let settingsUrl = "";
 let settings = null;
 let dbService = null;
 let storageService = null;
+let cacheService = null;
 
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -96,6 +98,7 @@ loadSettings.then(() => {
   settings.db = settings.db ? settings.db : {};
   dbService = new DBService(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
   storageService = new StorageService(dbService);
+  cacheService = new CacheService(dbService);
   dbService.connectDB().
     then(() => console.log("\x1b[35m%s\x1b[0m", "> DB connected!\n")).
     catch((err) => console.log(err));
@@ -177,6 +180,23 @@ const routeOAuthCallback = (request, response, client) => {
     });
 };
 
+const getVideoInfo = (req, cli) => new Promise((resolve, reject) => {
+  cacheService.getCachedVideoInfo(req).
+    then(resolve).
+    catch(() => {
+      YouTubeApiService.getVideoInfo(req, cli).
+        then((data) => {
+          resolve(data);
+          // Cache new Video info:
+          const videoId = new url.URL(req.url, "http://localhost:3000").searchParams.get("videoId");
+          cacheService.cacheVideoInfo(videoId, data).
+            then(() => console.log(`Cached VideoInfo for [${videoId}]`)).
+            catch((err) => console.log(err));
+        }).
+        catch(reject);
+    });
+});
+
 // Start webserver:
 console.log("\x1b[34m%s\x1b[0m", "> WebServer is starting...\n");
 http.createServer((request, response) => {
@@ -212,7 +232,7 @@ http.createServer((request, response) => {
       routeApiRequest(YouTubeApiService.getPlaylistItems, request, response, client);
       break;
     case "/videoInfo":
-      routeApiRequest(YouTubeApiService.getVideoInfo, request, response, client);
+      routeApiRequest(getVideoInfo, request, response, client);
       break;
     case "/settingsFile":
       routeApiRequest((req, cli) => storageService.settingsFile(req, cli), request, response, client);
