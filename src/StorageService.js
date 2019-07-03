@@ -1,5 +1,3 @@
-const url = require("url");
-
 class StorageService {
 
   constructor(dbService) {
@@ -45,7 +43,7 @@ class StorageService {
         body += chunk.toString();
       });
       req.on("end", () => {
-        this.dbService.upsertSettings(user, body).
+        this.dbService.upsertSettings(user, JSON.parse(body)).
           then(resolve).
           catch(reject);
       });
@@ -57,7 +55,11 @@ class StorageService {
   }
 
   getWatchInfo(user) {
-    return this.dbService.getWatchInfo(user);
+    return new Promise((resolve, reject) => {
+      this.dbService.getWatchInfo(user).
+        then(({data}) => resolve(data)).
+        catch(reject);
+    });
   }
 
   postWatchInfo(req, user) {

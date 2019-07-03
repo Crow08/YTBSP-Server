@@ -138,7 +138,7 @@ class DBService {
   upsertWatchInfo(user, watchInfo) {
     return new Promise((resolve, reject) => {
       this.db.collection("watchInfo").
-        replaceOne({"id": user.id}, {...watchInfo, "id": user.id}, {"upsert": true}).
+        replaceOne({"id": user.id}, {"data": watchInfo, "id": user.id}, {"upsert": true}).
         then(resolve).
         catch(reject);
     });
