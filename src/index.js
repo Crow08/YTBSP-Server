@@ -4,11 +4,12 @@ const url = require("url");
 const YTBSPClient = require("./ytbspClient");
 const DBService = require("./DBService");
 const YouTubeApiService = require("./YouTubeApiService");
-const GDriveApiService = require("./GDriveApiService");
+const StorageService = require("./StorageService");
 let settingsPath = "./settings.json";
 let settingsUrl = "";
 let settings = null;
 let dbService = null;
+let storageService = null;
 
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -94,6 +95,7 @@ loadSettings.then(() => {
   console.log("\x1b[35m%s\x1b[0m", "> Connecting to DB...\n");
   settings.db = settings.db ? settings.db : {};
   dbService = new DBService(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
+  storageService = new StorageService(dbService);
   dbService.connectDB().
     then(() => console.log("\x1b[35m%s\x1b[0m", "> DB connected!\n")).
     catch((err) => console.log(err));
@@ -214,10 +216,10 @@ http.createServer((request, response) => {
       routeApiRequest(YouTubeApiService.getVideoInfo, request, response, client);
       break;
     case "/settingsFile":
-      routeApiRequest(GDriveApiService.settingsFile, request, response, client);
+      routeApiRequest((req, cli) => storageService.settingsFile(req, cli), request, response, client);
       break;
-    case "/settingsFileContent":
-      routeApiRequest(GDriveApiService.settingsFileContent, request, response, client);
+    case "/watchInfo":
+      routeApiRequest((req, cli) => storageService.watchInfo(req, cli), request, response, client);
       break;
     default:
       route404(request, response);

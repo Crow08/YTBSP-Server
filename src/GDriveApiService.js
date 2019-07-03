@@ -17,12 +17,12 @@ class GDriveApiService {
     }
   }
 
-  static settingsFileContent(request, client, etag) {
+  static watchInfo(request, client, etag) {
     switch (request.method) {
     case "GET":
-      return GDriveApiService.getSettingsFileContent(request, client, etag);
+      return GDriveApiService.getWatchInfo(request, client, etag);
     case "Patch":
-      return GDriveApiService.patchSettingsFileContent(request, client, etag);
+      return GDriveApiService.patchWatchInfo(request, client, etag);
     default:
       return new Promise((resolve, reject) => reject(new Error(`Invalid request method ${request.method}!`)));
     }
@@ -106,7 +106,7 @@ class GDriveApiService {
   }
 
   // GApi request to get video information.
-  static getSettingsFileContent(req, client, etag) {
+  static getWatchInfo(req, client, etag) {
     return new Promise((resolve, reject) => {
       const params = new url.URL(req.url, "http://localhost:3000").searchParams;
       const apiReqParam = {
@@ -123,7 +123,7 @@ class GDriveApiService {
   }
 
   // GApi request save video information.
-  static patchSettingsFileContent(req, client, etag) {
+  static patchWatchInfo(req, client, etag) {
     return new Promise((resolve, reject) => {
       let body = "";
       req.on("data", (chunk) => {

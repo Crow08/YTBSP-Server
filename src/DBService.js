@@ -135,27 +135,27 @@ class DBService {
     });
   }
 
-  upsertVideoInfo(user, videoInfo) {
+  upsertWatchInfo(user, watchInfo) {
     return new Promise((resolve, reject) => {
-      this.db.collection("videoInfo").
-        replaceOne({"id": user.id}, {...videoInfo, "id": user.id}, {"upsert": true}).
+      this.db.collection("watchInfo").
+        replaceOne({"id": user.id}, {...watchInfo, "id": user.id}, {"upsert": true}).
         then(resolve).
         catch(reject);
     });
   }
 
-  removeVideoInfo(user) {
+  removeWatchInfo(user) {
     return new Promise((resolve, reject) => {
-      this.db.collection("videoInfo").
+      this.db.collection("watchInfo").
         deleteOne({"id": user.id}).
         then(resolve).
         catch(reject);
     });
   }
 
-  getVideoInfo(user) {
+  getWatchInfo(user) {
     return new Promise((resolve, reject) => {
-      this.db.collection("videoInfo").
+      this.db.collection("watchInfo").
         findOne({"id": user.id}).
         then(resolve).
         catch(reject);

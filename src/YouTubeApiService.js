@@ -17,16 +17,14 @@ class YouTubeApiService {
       if (params.get("maxResults")) {
         apiReqParam.maxResults = params.get("maxResults");
       }
-      if (params.get("nextPageToken")) {
-        apiReqParam.pageToken = params.get("nextPageToken");
+      if (params.get("pageToken")) {
+        apiReqParam.pageToken = params.get("pageToken");
       }
       if (params.get("forChannelId")) {
         apiReqParam.forChannelId = params.get("forChannelId");
       }
       client.youtube.subscriptions.list(apiReqParam).
-        then(({data}) => {
-          resolve(data);
-        }).
+        then(({data}) => resolve(data)).
         catch(reject);
     });
   }
@@ -46,7 +44,7 @@ class YouTubeApiService {
         apiReqParam.headers = {"If-None-Match": etag};
       }
       client.youtube.playlistItems.list(apiReqParam).
-        then(resolve).
+        then(({data}) => resolve(data)).
         catch(reject);
     });
   }
@@ -64,7 +62,7 @@ class YouTubeApiService {
         apiReqParam.headers = {"If-None-Match": etag};
       }
       client.youtube.videos.list(apiReqParam).
-        then(resolve).
+        then(({data}) => resolve(data)).
         catch(reject);
     });
   }
