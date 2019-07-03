@@ -158,12 +158,11 @@ const routeOAuthCallback = (request, response, client) => {
         response.writeHead(200, {"Content-Type": "text/html"});
         response.write(`<script>
           function receiveMessage(event){
-            if (event.origin !== "http://localhost:3000") {
+            if (event.origin === "http://www.youtube.com" || event.origin === "https://www.youtube.com") {
               event.source.postMessage("${id}", event.origin);
               console.log(event);
               window.close();
             }
-            
           }
           window.addEventListener("message", receiveMessage, false);
         </script>`);
