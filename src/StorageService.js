@@ -60,7 +60,7 @@ class StorageService {
     return this.dbService.getWatchInfo(user);
   }
 
-  patchWatchInfo(req, user) {
+  postWatchInfo(req, user) {
     return new Promise((resolve, reject) => {
       let body = "";
       req.on("data", (chunk) => {
