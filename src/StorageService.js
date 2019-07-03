@@ -57,7 +57,13 @@ class StorageService {
   getWatchInfo(user) {
     return new Promise((resolve, reject) => {
       this.dbService.getWatchInfo(user).
-        then(({data}) => resolve(data)).
+        then((result) => {
+          if (result && result.data) {
+            resolve(result.data);
+          } else {
+            resolve("[]");
+          }
+        }).
         catch(reject);
     });
   }
