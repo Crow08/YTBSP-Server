@@ -1,4 +1,4 @@
-const {MongoClient} = require("mongodb");
+const {MongoClient, ObjectID} = require("mongodb");
 
 class DBService {
 
@@ -175,6 +175,44 @@ class DBService {
     return new Promise((resolve, reject) => {
       this.db.collection("videoInfoCache").
         findOne({videoId}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  deleteExpiredCachedVideoInfo(id) {
+    return new Promise((resolve, reject) => {
+      const objectID = new ObjectID(id);
+      this.db.collection("videoInfoCache").
+        deleteMany({"_id": {"$lt": objectID}}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  upsertCachedPlaylist(info) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("playlistCache").
+        replaceOne({"playlistId": info.playlistId}, info, {"upsert": true}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  getCachedPlaylist(playlistId) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("playlistCache").
+        findOne({playlistId}).
+        then(resolve).
+        catch(reject);
+    });
+  }
+
+  deleteExpiredCachedPlaylist(id) {
+    return new Promise((resolve, reject) => {
+      const objectID = new ObjectID(id);
+      this.db.collection("playlistCache").
+        deleteMany({"_id": {"$lt": objectID}}).
         then(resolve).
         catch(reject);
     });

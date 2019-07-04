@@ -187,10 +187,27 @@ const getVideoInfo = (req, cli) => new Promise((resolve, reject) => {
       YouTubeApiService.getVideoInfo(req, cli).
         then((data) => {
           resolve(data);
-          // Cache new Video info:
+          // Cache new video info:
           const videoId = new url.URL(req.url, "http://localhost:3000").searchParams.get("videoId");
           cacheService.cacheVideoInfo(videoId, data).
-            then(() => console.log(`Cached VideoInfo for [${videoId}]`)).
+            then(() => console.log(`Cached video info for [${videoId}]`)).
+            catch((err) => console.log(err));
+        }).
+        catch(reject);
+    });
+});
+
+const getPlaylist = (req, cli) => new Promise((resolve, reject) => {
+  cacheService.getCachedPlaylist(req).
+    then(resolve).
+    catch(() => {
+      YouTubeApiService.getPlaylistItems(req, cli).
+        then((data) => {
+          resolve(data);
+          // Cache new playlist:
+          const playlistId = new url.URL(req.url, "http://localhost:3000").searchParams.get("playlistId");
+          cacheService.cachePlaylist(playlistId, data).
+            then(() => console.log(`Cached playlist for [${playlistId}]`)).
             catch((err) => console.log(err));
         }).
         catch(reject);
@@ -229,7 +246,7 @@ http.createServer((request, response) => {
       routeApiRequest(YouTubeApiService.getSubscriptions, request, response, client);
       break;
     case "/playlistItems":
-      routeApiRequest(YouTubeApiService.getPlaylistItems, request, response, client);
+      routeApiRequest(getPlaylist, request, response, client);
       break;
     case "/videoInfo":
       routeApiRequest(getVideoInfo, request, response, client);
