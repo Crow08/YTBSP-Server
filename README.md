@@ -1,5 +1,10 @@
 # YTBSP-Server
-Caching server for YouTube API requests made for usage with the [YTBSP-userscript](https://github.com/Crow08/YTBSP).
+[![version](https://img.shields.io/github/package-json/v/Crow08/ytbsp-server.svg)](/package.json)
+[![dependencies](https://david-dm.org/Crow08/ytbsp-server.svg)](/package.json)
+[![Known Vulnerabilities](https://snyk.io/test/github/Crow08/YTBSP-Server/badge.svg)](https://snyk.io/test/github/Crow08/YTBSP-Server)
+[![license](https://img.shields.io/github/license/Crow08/ytbsp-server.svg)](/LICENSE.md)
+
+Caching server for YouTube API requests made for usage with the [YTBSP-userscript](https://github.com/Crow08/YTBSP-Server).
 
 ## REST-API ###
 - "/authUrl":  
