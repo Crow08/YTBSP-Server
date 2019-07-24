@@ -64,7 +64,7 @@ class CacheService {
       if (now - this.lastCleanPlaylistItemsJob > this.cleanPlaylistItemsJobInterval) {
         console.log("Playlist items clean job started...");
         this.lastCleanPlaylistItemsJob = now;
-        const id = CacheService.objectIdForExpirationCheck(this.playlistExpireDuration);
+        const id = CacheService.objectIdForExpirationCheck(this.playlistItemsExpireDuration);
         this.dbService.deleteExpiredCachedPlaylistItems(id).
           then((result) => console.log(`Playlist items clean job complete!:
             ${JSON.stringify(result.deletedCount)} Items deleted.`)).
