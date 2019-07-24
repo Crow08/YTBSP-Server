@@ -25,16 +25,7 @@ https://developers.google.com/youtube/v3/docs/videos/list
 - "/watchInfo":  
 `Get` or `Post` video watch information as json (stored in MongoDB).
 
-## API client ## 
-This server depends on a Google API project and the Youtube v3 API.
-To start a project and enable the API please read the reference:  
-https://developers.google.com/youtube/v3/getting-started
-
-After your project is set up you can download the credentials JSON file from:  
-https://console.cloud.google.com/apis/credentials
-![credentials](https://user-images.githubusercontent.com/21142074/61789938-3b5d6200-ae16-11e9-80a5-2f23beb3db81.png)
-
-### Installation: ###
+## Installation: ##
 - Install node (with NPM >= 10) 
 - Install mongoDB on the host computer or set up a remote mongoDB
 - Run `npm install` in the project directory.
@@ -47,6 +38,15 @@ https://console.cloud.google.com/apis/credentials
   - The settings file can also be fetched using the `"settings_url"` environment variable or the `"settings_url=..."` command line argument.
 - Run `npm run start` in the project directory.
 - Enjoy your server!
+
+### API client ### 
+This server depends on a Google API project and the Youtube v3 API.
+To start a project and enable the API please read the reference:  
+https://developers.google.com/youtube/v3/getting-started
+
+After your project is set up you can download the credentials JSON file from:  
+https://console.cloud.google.com/apis/credentials
+![credentials](https://user-images.githubusercontent.com/21142074/61789938-3b5d6200-ae16-11e9-80a5-2f23beb3db81.png)
 
 ### Hosting ###
 Works great with [heroku](https://heroku.com) (free*).  
