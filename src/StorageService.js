@@ -4,39 +4,39 @@ class StorageService {
     this.dbService = dbService;
   }
 
-  settingsFile(request, client) {
+  settings(request, client) {
     switch (request.method) {
     case "GET":
-      return this.getSettingsFile(client.oAuth2Client.credentials);
+      return this.getSettings(client.oAuth2Client.credentials);
     case "Patch":
     case "POST":
-      return this.postSettingsFile(request, client.oAuth2Client.credentials);
+      return this.postSettings(request, client.oAuth2Client.credentials);
     case "DELETE":
-      return this.deleteSettingsFile(client.oAuth2Client.credentials);
+      return this.deleteSettings(client.oAuth2Client.credentials);
     default:
       return new Promise((resolve, reject) => reject(new Error(`Invalid request method ${request.method}!`)));
     }
   }
 
-  watchInfo(request, client) {
+  videoStates(request, client) {
     switch (request.method) {
     case "GET":
-      return this.getWatchInfo(client.oAuth2Client.credentials);
+      return this.getVideoStates(client.oAuth2Client.credentials);
     case "Patch":
     case "POST":
-      return this.postWatchInfo(request, client.oAuth2Client.credentials);
+      return this.postVideoStates(request, client.oAuth2Client.credentials);
     case "DELETE":
-      return this.deleteWatchInfo(client.oAuth2Client.credentials);
+      return this.deleteVideoStates(client.oAuth2Client.credentials);
     default:
       return new Promise((resolve, reject) => reject(new Error(`Invalid request method ${request.method}!`)));
     }
   }
 
-  getSettingsFile(user) {
+  getSettings(user) {
     return this.dbService.getSettings(user);
   }
 
-  postSettingsFile(req, user) {
+  postSettings(req, user) {
     return new Promise((resolve, reject) => {
       let body = "";
       req.on("data", (chunk) => {
@@ -50,13 +50,13 @@ class StorageService {
     });
   }
 
-  deleteSettingsFile(user) {
+  deleteSettings(user) {
     return this.dbService.removeSettings(user);
   }
 
-  getWatchInfo(user) {
+  getVideoStates(user) {
     return new Promise((resolve, reject) => {
-      this.dbService.getWatchInfo(user).
+      this.dbService.getVideoStates(user).
         then((result) => {
           if (result && result.data) {
             resolve(result.data);
@@ -68,22 +68,22 @@ class StorageService {
     });
   }
 
-  postWatchInfo(req, user) {
+  postVideoStates(req, user) {
     return new Promise((resolve, reject) => {
       let body = "";
       req.on("data", (chunk) => {
         body += chunk.toString();
       });
       req.on("end", () => {
-        this.dbService.upsertWatchInfo(user, body).
+        this.dbService.upsertVideoStates(user, body).
           then(resolve).
           catch(reject);
       });
     });
   }
 
-  deleteWatchInfo(user) {
-    return this.dbService.removeWatchInfo(user);
+  deleteVideoStates(user) {
+    return this.dbService.removeVideoStates(user);
   }
 }
 

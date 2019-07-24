@@ -180,34 +180,34 @@ const routeOAuthCallback = (request, response, client) => {
     });
 };
 
-const getVideoInfo = (req, cli) => new Promise((resolve, reject) => {
-  cacheService.getCachedVideoInfo(req).
+const getVideos = (req, cli) => new Promise((resolve, reject) => {
+  cacheService.getCachedVideos(req).
     then(resolve).
     catch(() => {
-      YouTubeApiService.getVideoInfo(req, cli).
+      YouTubeApiService.getVideos(req, cli).
         then((data) => {
           resolve(data);
-          // Cache new video info:
+          // Cache new video:
           const videoId = new url.URL(req.url, "http://localhost:3000").searchParams.get("videoId");
-          cacheService.cacheVideoInfo(videoId, data).
-            then(() => console.log(`Cached video info for [${videoId}]`)).
+          cacheService.cacheVideos(videoId, data).
+            then(() => console.log(`Cached video for [${videoId}]`)).
             catch((err) => console.log(err));
         }).
         catch(reject);
     });
 });
 
-const getPlaylist = (req, cli) => new Promise((resolve, reject) => {
-  cacheService.getCachedPlaylist(req).
+const getPlaylistItems = (req, cli) => new Promise((resolve, reject) => {
+  cacheService.getCachedPlaylistItems(req).
     then(resolve).
     catch(() => {
       YouTubeApiService.getPlaylistItems(req, cli).
         then((data) => {
           resolve(data);
-          // Cache new playlist:
+          // Cache new playlist items:
           const playlistId = new url.URL(req.url, "http://localhost:3000").searchParams.get("playlistId");
-          cacheService.cachePlaylist(playlistId, data).
-            then(() => console.log(`Cached playlist for [${playlistId}]`)).
+          cacheService.cachePlaylistItems(playlistId, data).
+            then(() => console.log(`Cached playlistItems for [${playlistId}]`)).
             catch((err) => console.log(err));
         }).
         catch(reject);
@@ -246,16 +246,16 @@ http.createServer((request, response) => {
       routeApiRequest(YouTubeApiService.getSubscriptions, request, response, client);
       break;
     case "/playlistItems":
-      routeApiRequest(getPlaylist, request, response, client);
+      routeApiRequest(getPlaylistItems, request, response, client);
       break;
-    case "/videoInfo":
-      routeApiRequest(getVideoInfo, request, response, client);
+    case "/videos":
+      routeApiRequest(getVideos, request, response, client);
       break;
-    case "/settingsFile":
-      routeApiRequest((req, cli) => storageService.settingsFile(req, cli), request, response, client);
+    case "/settings":
+      routeApiRequest((req, cli) => storageService.settings(req, cli), request, response, client);
       break;
-    case "/watchInfo":
-      routeApiRequest((req, cli) => storageService.watchInfo(req, cli), request, response, client);
+    case "/videoStates":
+      routeApiRequest((req, cli) => storageService.videoStates(req, cli), request, response, client);
       break;
     default:
       route404(request, response);

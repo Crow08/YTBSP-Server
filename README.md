@@ -12,18 +12,18 @@ Caching server for YouTube API requests made for usage with the [YTBSP-userscrip
 - "/oauth2callback":  
 `Get` callback for authentication with google redirected by Google API.
 - "/subscriptions":  
-`Get` __cached__ subscription resources that match the API request criteria.  
+`Get` subscription resources that match the API request criteria.  
 https://developers.google.com/youtube/v3/docs/subscriptions/list
 - "/playlistItems":  
-`Get` a collection of playlist items that match the API request parameters.  
+`Get` a __cached__ collection of playlist items that match the API request parameters.  
 https://developers.google.com/youtube/v3/docs/playlistItems/list
-- "/videoInfo":  
+- "/videos":  
 `Get` a __cached__ list of videos that match the API request parameters.  
 https://developers.google.com/youtube/v3/docs/videos/list
-- "/settingsFile":  
-`Get` or `Post` settings content as json (stored in MongoDB).
-- "/watchInfo":  
-`Get` or `Post` video watch information as json (stored in MongoDB).
+- "/settings":  
+`Get` or `Post` user settings as json (stored in MongoDB).
+- "/videoStates":  
+`Get` or `Post` user video information as json (stored in MongoDB).
 
 ## Installation: ##
 - Install node (with NPM >= 10) 

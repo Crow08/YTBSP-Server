@@ -135,83 +135,83 @@ class DBService {
     });
   }
 
-  upsertWatchInfo(user, watchInfo) {
+  upsertVideoStates(user, videoStates) {
     return new Promise((resolve, reject) => {
-      this.db.collection("watchInfo").
-        replaceOne({"id": user.id}, {"data": watchInfo, "id": user.id}, {"upsert": true}).
+      this.db.collection("videoStates").
+        replaceOne({"id": user.id}, {"data": videoStates, "id": user.id}, {"upsert": true}).
         then(resolve).
         catch(reject);
     });
   }
 
-  removeWatchInfo(user) {
+  removeVideoStates(user) {
     return new Promise((resolve, reject) => {
-      this.db.collection("watchInfo").
+      this.db.collection("videoStates").
         deleteOne({"id": user.id}).
         then(resolve).
         catch(reject);
     });
   }
 
-  getWatchInfo(user) {
+  getVideoStates(user) {
     return new Promise((resolve, reject) => {
-      this.db.collection("watchInfo").
+      this.db.collection("videoStates").
         findOne({"id": user.id}).
         then(resolve).
         catch(reject);
     });
   }
 
-  upsertCachedVideoInfo(info) {
+  upsertCachedVideos(info) {
     return new Promise((resolve, reject) => {
-      this.db.collection("videoInfoCache").
+      this.db.collection("videosCache").
         replaceOne({"videoId": info.videoId}, info, {"upsert": true}).
         then(resolve).
         catch(reject);
     });
   }
 
-  getCachedVideoInfo(videoId) {
+  getCachedVideos(videoId) {
     return new Promise((resolve, reject) => {
-      this.db.collection("videoInfoCache").
+      this.db.collection("videosCache").
         findOne({videoId}).
         then(resolve).
         catch(reject);
     });
   }
 
-  deleteExpiredCachedVideoInfo(id) {
+  deleteExpiredCachedVideos(id) {
     return new Promise((resolve, reject) => {
       const objectID = new ObjectID(id);
-      this.db.collection("videoInfoCache").
+      this.db.collection("videosCache").
         deleteMany({"_id": {"$lt": objectID}}).
         then(resolve).
         catch(reject);
     });
   }
 
-  upsertCachedPlaylist(info) {
+  upsertCachedPlaylistItems(info) {
     return new Promise((resolve, reject) => {
-      this.db.collection("playlistCache").
+      this.db.collection("playlistItemsCache").
         replaceOne({"playlistId": info.playlistId}, info, {"upsert": true}).
         then(resolve).
         catch(reject);
     });
   }
 
-  getCachedPlaylist(playlistId) {
+  getCachedPlaylistItems(playlistId) {
     return new Promise((resolve, reject) => {
-      this.db.collection("playlistCache").
+      this.db.collection("playlistItemsCache").
         findOne({playlistId}).
         then(resolve).
         catch(reject);
     });
   }
 
-  deleteExpiredCachedPlaylist(id) {
+  deleteExpiredCachedPlaylistItems(id) {
     return new Promise((resolve, reject) => {
       const objectID = new ObjectID(id);
-      this.db.collection("playlistCache").
+      this.db.collection("playlistItemsCache").
         deleteMany({"_id": {"$lt": objectID}}).
         then(resolve).
         catch(reject);

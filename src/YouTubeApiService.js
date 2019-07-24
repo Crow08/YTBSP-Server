@@ -2,7 +2,7 @@ const url = require("url");
 
 class YouTubeApiService {
 
-  // GApi request to get subscriptions page for the client.
+  // GApi request to get subscriptions.
   static getSubscriptions(req, client, etag) {
     return new Promise((resolve, reject) => {
       const params = new url.URL(req.url, "http://localhost:3000").searchParams;
@@ -29,7 +29,7 @@ class YouTubeApiService {
     });
   }
 
-  // GApi request to get playlist item information.
+  // GApi request to get playlist items.
   static getPlaylistItems(req, client, etag) {
     return new Promise((resolve, reject) => {
       const params = new url.URL(req.url, "http://localhost:3000").searchParams;
@@ -49,8 +49,8 @@ class YouTubeApiService {
     });
   }
 
-  // GApi request to get video information.
-  static getVideoInfo(req, client, etag) {
+  // GApi request to get videos.
+  static getVideos(req, client, etag) {
     return new Promise((resolve, reject) => {
       const params = new url.URL(req.url, "http://localhost:3000").searchParams;
       const apiReqParam = {
