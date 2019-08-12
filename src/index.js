@@ -15,7 +15,6 @@ let cacheService = null;
 
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
-  "https://www.googleapis.com/auth/drive.appdata",
   "https://www.googleapis.com/auth/userinfo.profile"
 ];
 
