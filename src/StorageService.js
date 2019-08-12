@@ -33,7 +33,7 @@ class StorageService {
   }
 
   getSettings(user) {
-    return this.dbService.getSettings(user);
+    return this.dbService.getSettings(user.id);
   }
 
   postSettings(req, user) {
@@ -51,12 +51,12 @@ class StorageService {
   }
 
   deleteSettings(user) {
-    return this.dbService.removeSettings(user);
+    return this.dbService.removeSettings(user.id);
   }
 
   getVideoStates(user) {
     return new Promise((resolve, reject) => {
-      this.dbService.getVideoStates(user).
+      this.dbService.getVideoStates(user.id).
         then((result) => {
           if (result && result.data) {
             resolve(result.data);
@@ -75,7 +75,7 @@ class StorageService {
         body += chunk.toString();
       });
       req.on("end", () => {
-        this.dbService.upsertVideoStates(user, body).
+        this.dbService.upsertVideoStates(user.id, body).
           then(resolve).
           catch(reject);
       });
@@ -83,7 +83,7 @@ class StorageService {
   }
 
   deleteVideoStates(user) {
-    return this.dbService.removeVideoStates(user);
+    return this.dbService.removeVideoStates(user.id);
   }
 }
 

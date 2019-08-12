@@ -49,8 +49,7 @@ class CacheService {
     if (now - this.lastCleanVideosJob > this.cleanVideosJobInterval) {
       console.log("Videos clean job started...");
       this.lastCleanVideosJob = now;
-      const id = CacheService.objectIdForExpirationCheck(this.videosExpireDuration);
-      this.dbService.deleteExpiredCachedVideos(id).
+      this.dbService.deleteExpiredCachedVideos(this.videosExpireDuration).
         then((result) => console.log(`Videos clean job complete!:
             ${JSON.stringify(result.deletedCount)} Items deleted.`)).
         catch((err) => console.log(`Videos clean job failed!:\n${err.stack}`));
@@ -64,8 +63,7 @@ class CacheService {
       if (now - this.lastCleanPlaylistItemsJob > this.cleanPlaylistItemsJobInterval) {
         console.log("Playlist items clean job started...");
         this.lastCleanPlaylistItemsJob = now;
-        const id = CacheService.objectIdForExpirationCheck(this.playlistItemsExpireDuration);
-        this.dbService.deleteExpiredCachedPlaylistItems(id).
+        this.dbService.deleteExpiredCachedPlaylistItems(this.playlistItemsExpireDuration).
           then((result) => console.log(`Playlist items clean job complete!:
             ${JSON.stringify(result.deletedCount)} Items deleted.`)).
           catch((err) => console.log(`"Playlist items clean job failed!:\n${err.stack}`)).
@@ -74,10 +72,6 @@ class CacheService {
         resolve();
       }
     });
-  }
-
-  static objectIdForExpirationCheck(expireDuration) {
-    return `${Math.floor((new Date().getTime() - expireDuration) / 1000).toString(16)}0000000000000000`;
   }
 }
 

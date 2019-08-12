@@ -2,7 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const url = require("url");
 const YTBSPClient = require("./ytbspClient");
-const DBService = require("./DBService");
+const MongoDB = require("./MongoDB");
 const YouTubeApiService = require("./YouTubeApiService");
 const StorageService = require("./StorageService");
 const CacheService = require("./CacheService");
@@ -96,7 +96,7 @@ const loadSettings = new Promise((resolve, reject) => {
 loadSettings.then(() => {
   console.log("\x1b[35m%s\x1b[0m", "> Connecting to DB...\n");
   settings.db = settings.db ? settings.db : {};
-  dbService = new DBService(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
+  dbService = new MongoDB(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
   storageService = new StorageService(dbService);
   cacheService = new CacheService(dbService);
   dbService.connectDB().
