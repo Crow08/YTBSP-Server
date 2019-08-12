@@ -1,22 +1,16 @@
 const http = require("http");
 const fs = require("fs");
-const url = require("url");
-const YTBSPClient = require("./ytbspClient");
-const MongoDB = require("./MongoDB");
-const YouTubeApiService = require("./YouTubeApiService");
-const StorageService = require("./StorageService");
+
 const CacheService = require("./CacheService");
+const MongoDB = require("./MongoDB");
+const WebServer = require("./WebServer");
+
 let settingsPath = "./settings.json";
 let settingsUrl = "";
 let settings = null;
 let dbService = null;
-let storageService = null;
 let cacheService = null;
-
-const scope = [
-  "https://www.googleapis.com/auth/youtube.readonly",
-  "https://www.googleapis.com/auth/userinfo.profile"
-];
+let webserver = null;
 
 // Parsing command line arguments.
 process.argv.forEach((arg) => {
@@ -91,177 +85,16 @@ const loadSettings = new Promise((resolve, reject) => {
   });
 });
 
-// Load settings from file, then initialize Mongo db connection.
+// Load settings from file, then initialize Mongo db connection and start web server.
 loadSettings.then(() => {
   console.log("\x1b[35m%s\x1b[0m", "> Connecting to DB...\n");
   settings.db = settings.db ? settings.db : {};
   dbService = new MongoDB(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
-  storageService = new StorageService(dbService);
   cacheService = new CacheService(dbService);
   dbService.connectDB().
     then(() => console.log("\x1b[35m%s\x1b[0m", "> DB connected!\n")).
     catch((err) => console.log(err));
+  // Start webserver:
+  webserver = new WebServer(dbService, cacheService, settings);
+  webserver.start();
 });
-
-// Get client for the script user to make GApi requests.
-const getClient = (request) => new Promise((resolve) => {
-  const params = new url.URL(request.url, "http://localhost:3000").searchParams;
-  const clientId = params.get("id");
-  if (clientId) {
-    dbService.getUser(clientId).
-      then((user) => {
-        // Fetched token for Client.
-        const client = new YTBSPClient(dbService, settings.installed || settings.web);
-        client.oAuth2Client.credentials = user;
-        resolve(client);
-      }).
-      catch((err) => {
-        // Cant fetch token for Client.
-        console.log(err);
-        resolve(new YTBSPClient(dbService, settings.installed || settings.web));
-      });
-  } else {
-    // New Client.
-    resolve(new YTBSPClient(dbService, settings.installed || settings.web));
-  }
-});
-
-// Default handling for Api Requests.
-const routeApiRequest = (func, request, response, client) => {
-  func(request, client).
-    then((res) => {
-      response.writeHead(200, {"Content-Type": "text/json"});
-      response.write(JSON.stringify(res));
-      response.end();
-    }).
-    catch((err) => {
-      response.writeHead(500, {"Content-Type": "text/plain"});
-      response.write(err.stack);
-      console.log(err.stack);
-      response.end();
-    });
-};
-
-// Handling for unknown request paths.
-const route404 = (request, response) => {
-  response.writeHead(404, {"Content-Type": "text/html"});
-  response.write("<div style=\"text-align: center;height: 100%;width: 100%;display: table;\">" +
-    "<div style=\"display: table-cell;vertical-align: middle;\">" +
-    `<h1>Error 404 : Not Found</h1>requested path: ${request.url}` +
-    "</div></div>");
-  response.end();
-};
-
-// Handling for callback after user has authorized the server app.
-const routeOAuthCallback = (request, response, client) => {
-  client.authenticate(request).
-    then((id) => {
-      if (id) {
-        response.writeHead(200, {"Content-Type": "text/html"});
-        response.write(`<script>
-          function receiveMessage(event){
-            if (event.origin === "http://www.youtube.com" || event.origin === "https://www.youtube.com") {
-              event.source.postMessage("${id}", event.origin);
-              console.log(event);
-              window.close();
-            }
-          }
-          window.addEventListener("message", receiveMessage, false);
-        </script>`);
-        response.end();
-      }
-    }).
-    catch((err) => {
-      response.writeHead(500, {"Content-Type": "text/plain"});
-      response.write(err.stack);
-      console.log(err.stack);
-      response.end();
-    });
-};
-
-const getVideos = (req, cli) => new Promise((resolve, reject) => {
-  cacheService.getCachedVideos(req).
-    then(resolve).
-    catch(() => {
-      YouTubeApiService.getVideos(req, cli).
-        then((data) => {
-          resolve(data);
-          // Cache new video:
-          const videoId = new url.URL(req.url, "http://localhost:3000").searchParams.get("videoId");
-          cacheService.cacheVideos(videoId, data).
-            then(() => console.log(`Cached video for [${videoId}]`)).
-            catch((err) => console.log(err));
-        }).
-        catch(reject);
-    });
-});
-
-const getPlaylistItems = (req, cli) => new Promise((resolve, reject) => {
-  cacheService.getCachedPlaylistItems(req).
-    then(resolve).
-    catch(() => {
-      YouTubeApiService.getPlaylistItems(req, cli).
-        then((data) => {
-          resolve(data);
-          // Cache new playlist items:
-          const playlistId = new url.URL(req.url, "http://localhost:3000").searchParams.get("playlistId");
-          cacheService.cachePlaylistItems(playlistId, data).
-            then(() => console.log(`Cached playlistItems for [${playlistId}]`)).
-            catch((err) => console.log(err));
-        }).
-        catch(reject);
-    });
-});
-
-// Start webserver:
-console.log("\x1b[34m%s\x1b[0m", "> WebServer is starting...\n");
-http.createServer((request, response) => {
-  // Set CORS headers
-  response.setHeader("Access-Control-Allow-Origin", "*");
-  response.setHeader("Access-Control-Request-Method", "*");
-  response.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
-  response.setHeader("Access-Control-Allow-Headers", "*");
-  if (request.method === "OPTIONS") {
-    response.writeHead(200);
-    response.end();
-    return;
-  }
-  getClient(request).then((client) => {
-    let path = request.url;
-    const paramPos = request.url.indexOf("?");
-    if (paramPos > -1) {
-      path = request.url.substr(0, paramPos);
-    }
-    switch (path) {
-    case "/authUrl":
-      response.writeHead(200, {"Content-Type": "text/plain"});
-      response.write(client.getAuthUrl(scope));
-      response.end();
-      break;
-    case "/oauth2callback":
-      routeOAuthCallback(request, response, client);
-      break;
-    case "/subscriptions":
-      routeApiRequest(YouTubeApiService.getSubscriptions, request, response, client);
-      break;
-    case "/playlistItems":
-      routeApiRequest(getPlaylistItems, request, response, client);
-      break;
-    case "/videos":
-      routeApiRequest(getVideos, request, response, client);
-      break;
-    case "/settings":
-      routeApiRequest((req, cli) => storageService.settings(req, cli), request, response, client);
-      break;
-    case "/videoStates":
-      routeApiRequest((req, cli) => storageService.videoStates(req, cli), request, response, client);
-      break;
-    default:
-      route404(request, response);
-      break;
-    }
-  });
-}).listen(
-  process.env.PORT || 3000,
-  () => console.log("\x1b[34m%s\x1b[0m", "> WebServer successfully started!\n")
-);

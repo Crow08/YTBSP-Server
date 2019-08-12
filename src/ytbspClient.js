@@ -10,6 +10,12 @@ class YTBSPClient {
       redirect URI. There must be at least one redirect URI defined. Please edit
       your settings.json, and add a 'redirect_uris' section.`);
     }
+
+    this.scope = [
+      "https://www.googleapis.com/auth/youtube.readonly",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ];
+
     const redirectUri = keys.redirect_uris.find((uri) => uri.includes("/oauth2callback"));
 
     // Create an oAuth client to authorize the API call
@@ -49,10 +55,10 @@ class YTBSPClient {
     });
   }
 
-  getAuthUrl(scopes) {
+  getAuthUrl() {
     return this.oAuth2Client.generateAuthUrl({
       "access_type": "offline",
-      "scope": scopes.join(" ")
+      "scope": this.scopes.join(" ")
     });
   }
 
