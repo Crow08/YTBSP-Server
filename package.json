@@ -4,7 +4,9 @@
   "description": "",
   "scripts": {
     "build": "npm install",
-    "start": "node ./src/index.js"
+    "start": "node ./src/index.js",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "private": true,
   "repository": {
@@ -19,6 +21,8 @@
   "homepage": "https://github.com/Crow08/YTBSP-server#readme",
   "dependencies": {
     "googleapis": "^42.0.0",
-    "mongodb": "^3.3.2"
-  }
+    "mongodb": "^3.3.2",
+    "snyk": "^1.230.5"
+  },
+  "snyk": true
 }
