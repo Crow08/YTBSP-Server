@@ -11,29 +11,29 @@ class WebServer {
     this.settings = settings;
   }
 
-  settings(request, client) {
+  static handleSettings(request, client, webServer) {
     switch (request.method) {
     case "GET":
-      return this.getSettings(client.oAuth2Client.credentials);
+      return webServer.getSettings(client.oAuth2Client.credentials);
     case "Patch":
     case "POST":
-      return this.postSettings(request, client.oAuth2Client.credentials);
+      return webServer.postSettings(request, client.oAuth2Client.credentials);
     case "DELETE":
-      return this.deleteSettings(client.oAuth2Client.credentials);
+      return webServer.deleteSettings(client.oAuth2Client.credentials);
     default:
       return new Promise((resolve, reject) => reject(new Error(`Invalid request method ${request.method}!`)));
     }
   }
 
-  videoStates(request, client) {
+  static handleVideoStates(request, client, webServer) {
     switch (request.method) {
     case "GET":
-      return this.getVideoStates(client.oAuth2Client.credentials);
+      return webServer.getVideoStates(client.oAuth2Client.credentials);
     case "Patch":
     case "POST":
-      return this.postVideoStates(request, client.oAuth2Client.credentials);
+      return webServer.postVideoStates(request, client.oAuth2Client.credentials);
     case "DELETE":
-      return this.deleteVideoStates(client.oAuth2Client.credentials);
+      return webServer.deleteVideoStates(client.oAuth2Client.credentials);
     default:
       return new Promise((resolve, reject) => reject(new Error(`Invalid request method ${request.method}!`)));
     }
@@ -119,8 +119,8 @@ class WebServer {
   }
 
   // Default handling for Api Requests.
-  static routeApiRequest(func, request, response, client) {
-    func(request, client).
+  static routeApiRequest(func, request, response, client, webServer) {
+    func(request, client, webServer).
       then((res) => {
         response.writeHead(200, {"Content-Type": "text/json"});
         response.write(JSON.stringify(res));
@@ -177,9 +177,9 @@ class WebServer {
     response.end();
   }
 
-  getVideos(req, cli) {
+  static getVideos(req, cli, webServer) {
     return new Promise((resolve, reject) => {
-      this.cacheService.getCachedVideos(req).
+      webServer.cacheService.getCachedVideos(req).
         then(resolve).
         catch(() => {
           YouTubeApiService.getVideos(req, cli).
@@ -187,7 +187,7 @@ class WebServer {
               resolve(data);
               // Cache new video:
               const videoId = new url.URL(req.url, "http://localhost:3000").searchParams.get("videoId");
-              this.cacheService.cacheVideos(videoId, data).
+              webServer.cacheService.cacheVideos(videoId, data).
                 then(() => console.log(`Cached video for [${videoId}]`)).
                 catch((err) => console.log(err));
             }).
@@ -196,9 +196,9 @@ class WebServer {
     });
   }
 
-  getPlaylistItems(req, cli) {
+  static getPlaylistItems(req, cli, webServer) {
     return new Promise((resolve, reject) => {
-      this.cacheService.getCachedPlaylistItems(req).
+      webServer.cacheService.getCachedPlaylistItems(req).
         then(resolve).
         catch(() => {
           YouTubeApiService.getPlaylistItems(req, cli).
@@ -206,7 +206,7 @@ class WebServer {
               resolve(data);
               // Cache new playlist items:
               const playlistId = new url.URL(req.url, "http://localhost:3000").searchParams.get("playlistId");
-              this.cacheService.cachePlaylistItems(playlistId, data).
+              webServer.cacheService.cachePlaylistItems(playlistId, data).
                 then(() => console.log(`Cached playlistItems for [${playlistId}]`)).
                 catch((err) => console.log(err));
             }).
@@ -242,19 +242,19 @@ class WebServer {
           WebServer.routeOAuthCallback(request, response, client);
           break;
         case "/subscriptions":
-          WebServer.routeApiRequest(YouTubeApiService.getSubscriptions, request, response, client);
+          WebServer.routeApiRequest(YouTubeApiService.getSubscriptions, request, response, client, this);
           break;
         case "/playlistItems":
-          WebServer.routeApiRequest(this.getPlaylistItems, request, response, client);
+          WebServer.routeApiRequest(WebServer.getPlaylistItems, request, response, client, this);
           break;
         case "/videos":
-          WebServer.routeApiRequest(this.getVideos, request, response, client);
+          WebServer.routeApiRequest(WebServer.getVideos, request, response, client, this);
           break;
         case "/settings":
-          WebServer.routeApiRequest(this.settings, request, response, client);
+          WebServer.routeApiRequest(WebServer.handleSettings, request, response, client, this);
           break;
         case "/videoStates":
-          WebServer.routeApiRequest(this.videoStates, request, response, client);
+          WebServer.routeApiRequest(WebServer.handleVideoStates, request, response, client, this);
           break;
         default:
           WebServer.route404(request, response);
