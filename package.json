@@ -13,6 +13,9 @@
   },
   "author": "Crow08",
   "license": "MIT",
+  "engines": {
+    "node": "10.15.3"
+  },
   "bugs": {
     "url": "https://github.com/Crow08/YTBSP-server/issues"
   },
