@@ -67,6 +67,8 @@ const loadSettings = new Promise((resolve, reject) => {
           rawData += chunk;
         });
         response.on("end", () => {
+          console.log("raw config:");
+          console.log(rawData);
           settings = JSON.parse(rawData);
           // Check if all necessary settings are set.
           validateSettings().
