@@ -1,4 +1,4 @@
-const http = require("http");
+const https = require("https");
 const fs = require("fs");
 
 const CacheService = require("./CacheService");
@@ -15,7 +15,7 @@ let webserver = null;
 // Parsing command line arguments.
 process.argv.forEach((arg) => {
   if (arg.match(/^settings_url=.+/u)) {
-    settingsUrl = arg.split("=")[1].replace("https://", "http://");
+    settingsUrl = arg.split("=")[1];
   } else if (arg.match(/^settings_path=.+/u)) {
     settingsPath = arg.split("=")[1];
   }
@@ -23,7 +23,7 @@ process.argv.forEach((arg) => {
 
 // Parsing environment variables.
 if (settingsUrl === "" && typeof process.env.settings_url !== "undefined") {
-  settingsUrl = process.env.settings_url.replace("https://", "http://");
+  settingsUrl = process.env.settings_url;
 }
 if (settingsPath === "" && typeof process.env.settings_path !== "undefined") {
   settingsPath = process.env.settings_url;
@@ -60,15 +60,13 @@ const loadSettings = new Promise((resolve, reject) => {
     // If settingsUrl is set:
     } else if (settingsUrl.length > 0) {
       // Download settings file.
-      http.get(settingsUrl, (response) => {
+      https.get(settingsUrl, (response) => {
         response.setEncoding("utf8");
         let rawData = "";
         response.on("data", (chunk) => {
           rawData += chunk;
         });
         response.on("end", () => {
-          console.log("raw config:");
-          console.log(rawData);
           settings = JSON.parse(rawData);
           // Check if all necessary settings are set.
           validateSettings().
