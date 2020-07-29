@@ -30,7 +30,7 @@ class MongoDB extends DBService {
     // If client connection doesn't exists.
     if (this.client === null) {
       return new Promise((resolve, reject) => {
-        MongoClient.connect(this.url, {"useNewUrlParser": true}).
+        MongoClient.connect(this.url, {"useNewUrlParser": true, "useUnifiedTopology": true}).
           then((client) => {
             this.client = client;
             this.db = this.client.db(this.dbName);

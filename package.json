@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/Crow08/YTBSP-server#readme",
   "dependencies": {
-    "googleapis": "^46.0.0",
-    "mongodb": "^3.4.1"
+    "googleapis": "^57.0.0",
+    "mongodb": "^3.5.9"
   }
 }
