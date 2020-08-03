@@ -39,6 +39,29 @@ class WebServer {
     }
   }
 
+  static deleteUserData(request, client, dbService) {
+    if (request.method === "DELETE") {
+      const userId = client.oAuth2Client.credentials.id;
+      return new Promise((resolve, reject) => dbService.removeUser(userId).
+        then(() => dbService.removeVideoStates(userId).
+          then(() => dbService.removeSettings(userId).
+            then(() => resolve("success")).
+            catch((err) => {
+              reject(new Error(`Something went wrong deleting user Data for ${userId}!`));
+              console.log(err);
+            })).
+          catch((err) => {
+            reject(new Error(`Something went wrong deleting user Data for ${userId}!`));
+            console.log(err);
+          })).
+        catch((err) => {
+          reject(new Error(`Something went wrong deleting user Data for ${userId}!`));
+          console.log(err);
+        }));
+    }
+    return new Promise((resolve, reject) => reject(new Error(`Invalid request method ${request.method}!`)));
+  }
+
   getSettings(user) {
     return this.dbService.getSettings(user.id);
   }
@@ -215,13 +238,14 @@ class WebServer {
     });
   }
 
+  // eslint-disable-next-line max-lines-per-function
   start() {
     console.log("\x1b[34m%s\x1b[0m", "> WebServer is starting...\n");
     http.createServer((request, response) => {
       // Set CORS headers
       response.setHeader("Access-Control-Allow-Origin", "*");
       response.setHeader("Access-Control-Request-Method", "*");
-      response.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
+      response.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET, DELETE, POST");
       response.setHeader("Access-Control-Allow-Headers", "*");
       if (request.method === "OPTIONS") {
         response.writeHead(200);
@@ -255,6 +279,10 @@ class WebServer {
           break;
         case "/videoStates":
           WebServer.routeApiRequest(WebServer.handleVideoStates, request, response, client, this);
+          break;
+        case "/deleteUserData":
+          console.log("deleteUserData");
+          WebServer.routeApiRequest(WebServer.deleteUserData, request, response, client, this.dbService);
           break;
         default:
           WebServer.route404(request, response);

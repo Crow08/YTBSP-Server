@@ -58,6 +58,7 @@ class YTBSPClient {
   getAuthUrl() {
     return this.oAuth2Client.generateAuthUrl({
       "access_type": "offline",
+      "response_type": "code",
       "scope": this.scope.join(" ")
     });
   }
