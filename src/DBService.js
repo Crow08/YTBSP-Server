@@ -73,16 +73,6 @@ class DBService {
   }
 
   /**
-   * Get all users from the DB as an Array.
-   * @abstract
-   */
-  getAllUsers() {
-    return new Promise((resolve, reject) => {
-      reject(new Error("No implementation Found!"));
-    });
-  }
-
-  /**
    * Insert or update the user specific settings in the DB.
    * @abstract
    * @param {Object} user - User object containing ID and tokens and other authentication information.
@@ -145,72 +135,6 @@ class DBService {
    * @param {string} userId - User ID equal to the google user ID.
    */
   getVideoStates(userId) {
-    return new Promise((resolve, reject) => {
-      reject(new Error("No implementation Found!"));
-    });
-  }
-
-  /**
-   * Insert or update the result of an Video API request for caching purposes in th DB.
-   * @abstract
-   * @param {object} info - request result as parsed json.
-   */
-  upsertCachedVideos(info) {
-    return new Promise((resolve, reject) => {
-      reject(new Error("No implementation Found!"));
-    });
-  }
-
-  /**
-   * Get an cached request result for an Video API request from the DB.
-   * @abstract
-   * @param {string} videoId - The video ID equal to the Google ID.
-   */
-  getCachedVideos(videoId) {
-    return new Promise((resolve, reject) => {
-      reject(new Error("No implementation Found!"));
-    });
-  }
-
-  /**
-   * Prune cached video requests older than the expiration duration.
-   * @abstract
-   * @param {number} expireDuration - time in ms for the request cache to expire.
-   */
-  deleteExpiredCachedVideos(expireDuration) {
-    return new Promise((resolve, reject) => {
-      reject(new Error("No implementation Found!"));
-    });
-  }
-
-  /**
-   * Insert or update the result of an playlist item API request for caching purposes in th DB.
-   * @abstract
-   * @param {object} info - request result as parsed json.
-   */
-  upsertCachedPlaylistItems(info) {
-    return new Promise((resolve, reject) => {
-      reject(new Error("No implementation Found!"));
-    });
-  }
-
-  /**
-   * Get an cached request result for an playlist item API request from the DB.
-   * @abstract
-   * @param {string} playlistId - The playlist ID equal to the Google ID.
-   */
-  getCachedPlaylistItems(playlistId) {
-    return new Promise((resolve, reject) => {
-      reject(new Error("No implementation Found!"));
-    });
-  }
-
-  /**
-   * Prune cached video requests older than the expiration duration.
-   * @abstract
-   * @param {number} expireDuration - time in ms for the request cache to expire.
-   */
-  deleteExpiredCachedPlaylistItems(expireDuration) {
     return new Promise((resolve, reject) => {
       reject(new Error("No implementation Found!"));
     });

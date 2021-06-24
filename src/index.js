@@ -1,7 +1,6 @@
 const https = require("https");
 const fs = require("fs");
 
-const CacheService = require("./CacheService");
 const MongoDB = require("./MongoDB");
 const WebServer = require("./WebServer");
 
@@ -9,7 +8,6 @@ let settingsPath = "./settings.json";
 let settingsUrl = "";
 let settings = null;
 let dbService = null;
-let cacheService = null;
 let webserver = null;
 
 // Parsing command line arguments.
@@ -90,11 +88,10 @@ loadSettings.then(() => {
   console.log("\x1b[35m%s\x1b[0m", "> Connecting to DB...\n");
   settings.db = settings.db ? settings.db : {};
   dbService = new MongoDB(settings.db.mongodbUrl, settings.db.mongodbUser, settings.db.mongodbPassword);
-  cacheService = new CacheService(dbService);
   dbService.connectDB().
     then(() => console.log("\x1b[35m%s\x1b[0m", "> DB connected!\n")).
     catch((err) => console.log(err));
   // Start webserver:
-  webserver = new WebServer(dbService, cacheService, settings);
+  webserver = new WebServer(dbService, settings);
   webserver.start();
 });

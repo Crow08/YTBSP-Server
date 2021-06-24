@@ -12,7 +12,6 @@ class YTBSPClient {
     }
 
     this.scope = [
-      "https://www.googleapis.com/auth/youtube.readonly",
       "https://www.googleapis.com/auth/userinfo.profile"
     ];
 
@@ -24,17 +23,6 @@ class YTBSPClient {
       keys.client_secret,
       redirectUri
     );
-
-    // Initialize the Youtube API library
-    this.youtube = google.youtube({
-      "auth": this.oAuth2Client,
-      "version": "v3"
-    });
-
-    this.drive = google.drive({
-      "auth": this.oAuth2Client,
-      "version": "v3"
-    });
 
     // "tokens" update event: Update token in DB.
     this.oAuth2Client.on("tokens", (tokens) => {

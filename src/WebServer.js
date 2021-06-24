@@ -1,13 +1,11 @@
 const http = require("http");
 const url = require("url");
 const YTBSPClient = require("./ytbspClient");
-const YouTubeApiService = require("./YouTubeApiService");
 
 class WebServer {
 
-  constructor(dbService, cacheService, settings) {
+  constructor(dbService, settings) {
     this.dbService = dbService;
-    this.cacheService = cacheService;
     this.settings = settings;
   }
 
@@ -200,44 +198,6 @@ class WebServer {
     response.end();
   }
 
-  static getVideos(req, cli, webServer) {
-    return new Promise((resolve, reject) => {
-      webServer.cacheService.getCachedVideos(req).
-        then(resolve).
-        catch(() => {
-          YouTubeApiService.getVideos(req, cli).
-            then((data) => {
-              resolve(data);
-              // Cache new video:
-              const videoId = new url.URL(req.url, "http://localhost:3000").searchParams.get("videoId");
-              webServer.cacheService.cacheVideos(videoId, data).
-                then(() => console.log(`Cached video for [${videoId}]`)).
-                catch((err) => console.log(err));
-            }).
-            catch(reject);
-        });
-    });
-  }
-
-  static getPlaylistItems(req, cli, webServer) {
-    return new Promise((resolve, reject) => {
-      webServer.cacheService.getCachedPlaylistItems(req).
-        then(resolve).
-        catch(() => {
-          YouTubeApiService.getPlaylistItems(req, cli).
-            then((data) => {
-              resolve(data);
-              // Cache new playlist items:
-              const playlistId = new url.URL(req.url, "http://localhost:3000").searchParams.get("playlistId");
-              webServer.cacheService.cachePlaylistItems(playlistId, data).
-                then(() => console.log(`Cached playlistItems for [${playlistId}]`)).
-                catch((err) => console.log(err));
-            }).
-            catch(reject);
-        });
-    });
-  }
-
   // eslint-disable-next-line max-lines-per-function
   start() {
     console.log("\x1b[34m%s\x1b[0m", "> WebServer is starting...\n");
@@ -264,15 +224,6 @@ class WebServer {
           break;
         case "/oauth2callback":
           WebServer.routeOAuthCallback(request, response, client);
-          break;
-        case "/subscriptions":
-          WebServer.routeApiRequest(YouTubeApiService.getSubscriptions, request, response, client, this);
-          break;
-        case "/playlistItems":
-          WebServer.routeApiRequest(WebServer.getPlaylistItems, request, response, client, this);
-          break;
-        case "/videos":
-          WebServer.routeApiRequest(WebServer.getVideos, request, response, client, this);
           break;
         case "/settings":
           WebServer.routeApiRequest(WebServer.handleSettings, request, response, client, this);

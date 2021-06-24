@@ -1,4 +1,4 @@
-const {MongoClient, ObjectID} = require("mongodb");
+const {MongoClient} = require("mongodb");
 
 const DBService = require("./DBService.js");
 
@@ -117,19 +117,6 @@ class MongoDB extends DBService {
   /**
    * @override
    */
-  getAllUsers() {
-    return new Promise((resolve, reject) => {
-      this.db.collection("users").
-        find({}).
-        toArray().
-        then(resolve).
-        catch(reject);
-    });
-  }
-
-  /**
-   * @override
-   */
   upsertSettings(user, settings) {
     return new Promise((resolve, reject) => {
       this.db.collection("settings").
@@ -197,87 +184,6 @@ class MongoDB extends DBService {
         then(resolve).
         catch(reject);
     });
-  }
-
-  /**
-   * @override
-   */
-  upsertCachedVideos(info) {
-    return new Promise((resolve, reject) => {
-      this.db.collection("videosCache").
-        replaceOne({"videoId": info.videoId}, info, {"upsert": true}).
-        then(resolve).
-        catch(reject);
-    });
-  }
-
-  /**
-   * @override
-   */
-  getCachedVideos(videoId) {
-    return new Promise((resolve, reject) => {
-      this.db.collection("videosCache").
-        findOne({videoId}).
-        then(resolve).
-        catch(reject);
-    });
-  }
-
-  /**
-   * @override
-   */
-  deleteExpiredCachedVideos(expireDuration) {
-    return new Promise((resolve, reject) => {
-      const objectID = new ObjectID(MongoDB.objectIdForExpirationCheck(expireDuration));
-      this.db.collection("videosCache").
-        deleteMany({"_id": {"$lt": objectID}}).
-        then(resolve).
-        catch(reject);
-    });
-  }
-
-  /**
-   * @override
-   */
-  upsertCachedPlaylistItems(info) {
-    return new Promise((resolve, reject) => {
-      this.db.collection("playlistItemsCache").
-        replaceOne({"playlistId": info.playlistId}, info, {"upsert": true}).
-        then(resolve).
-        catch(reject);
-    });
-  }
-
-  /**
-   * @override
-   */
-  getCachedPlaylistItems(playlistId) {
-    return new Promise((resolve, reject) => {
-      this.db.collection("playlistItemsCache").
-        findOne({playlistId}).
-        then(resolve).
-        catch(reject);
-    });
-  }
-
-  /**
-   * @override
-   */
-  deleteExpiredCachedPlaylistItems(expireDuration) {
-    return new Promise((resolve, reject) => {
-      const objectID = new ObjectID(MongoDB.objectIdForExpirationCheck(expireDuration));
-      this.db.collection("playlistItemsCache").
-        deleteMany({"_id": {"$lt": objectID}}).
-        then(resolve).
-        catch(reject);
-    });
-  }
-
-  /**
-   * @override
-   */
-  static objectIdForExpirationCheck(expireDuration) {
-    return `${Math.floor((new Date().getTime() - expireDuration) / 1000).toString(16)}0000000000000000`;
   }
 }
 
