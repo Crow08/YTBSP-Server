@@ -12,7 +12,7 @@ class YTBSPClient {
     }
 
     this.scope = [
-      "https://www.googleapis.com/auth/userinfo.profile"
+      "openid"
     ];
 
     const redirectUri = keys.redirect_uris.find((uri) => uri.includes("/oauth2callback"));
