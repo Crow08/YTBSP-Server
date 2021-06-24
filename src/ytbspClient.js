@@ -2,8 +2,9 @@ const {google} = require("googleapis");
 const url = require("url");
 
 class YTBSPClient {
+
   constructor(dbService, keys) {
-    this.dbService = dbService;
+    this.user = {id: undefined};
     // Validate the redirectUri.  This is a frequent cause of confusion.
     if (!keys.redirect_uris || keys.redirect_uris.length === 0) {
       throw new Error(`The provided settings.json does not define a valid
@@ -28,11 +29,10 @@ class YTBSPClient {
     this.oAuth2Client.on("tokens", (tokens) => {
       if (tokens) {
         this.oAuth2Client.getTokenInfo(tokens.access_token).
-          then((info) => {
-            console.log(info.sub);
-            tokens.id = info.sub;
+          then((tokenInfo) => {
             // Save new token with userId to DB.
-            dbService.upsertUser(tokens).catch((err) => {
+            this.user.id = tokenInfo.sub;
+            dbService.upsertUser(this.user).catch((err) => {
               console.log(err);
             });
           }).

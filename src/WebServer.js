@@ -12,12 +12,12 @@ class WebServer {
   static handleSettings(request, client, webServer) {
     switch (request.method) {
     case "GET":
-      return webServer.getSettings(client.oAuth2Client.credentials);
+      return webServer.getSettings(client.user);
     case "Patch":
     case "POST":
-      return webServer.postSettings(request, client.oAuth2Client.credentials);
+      return webServer.postSettings(request, client.user);
     case "DELETE":
-      return webServer.deleteSettings(client.oAuth2Client.credentials);
+      return webServer.deleteSettings(client.user);
     default:
       return new Promise((resolve, reject) => reject(new Error(`Invalid request method ${request.method}!`)));
     }
@@ -26,12 +26,12 @@ class WebServer {
   static handleVideoStates(request, client, webServer) {
     switch (request.method) {
     case "GET":
-      return webServer.getVideoStates(client.oAuth2Client.credentials);
+      return webServer.getVideoStates(client.user);
     case "Patch":
     case "POST":
-      return webServer.postVideoStates(request, client.oAuth2Client.credentials);
+      return webServer.postVideoStates(request, client.user);
     case "DELETE":
-      return webServer.deleteVideoStates(client.oAuth2Client.credentials);
+      return webServer.deleteVideoStates(client.user);
     default:
       return new Promise((resolve, reject) => reject(new Error(`Invalid request method ${request.method}!`)));
     }
@@ -39,7 +39,7 @@ class WebServer {
 
   static deleteUserData(request, client, dbService) {
     if (request.method === "DELETE") {
-      const userId = client.oAuth2Client.credentials.id;
+      const userId = client.user.id;
       return new Promise((resolve, reject) => dbService.removeUser(userId).
         then(() => dbService.removeVideoStates(userId).
           then(() => dbService.removeSettings(userId).
@@ -121,10 +121,9 @@ class WebServer {
       const clientId = params.get("id");
       if (clientId) {
         this.dbService.getUser(clientId).
-          then((user) => {
+          then(() => {
             // Fetched token for Client.
             const client = new YTBSPClient(this.dbService, this.settings.installed || this.settings.web);
-            client.oAuth2Client.credentials = user;
             resolve(client);
           }).
           catch((err) => {
