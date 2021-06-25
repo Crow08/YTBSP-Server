@@ -103,7 +103,7 @@ class WebServer {
         body += chunk.toString();
       });
       req.on("end", () => {
-        this.dbService.upsertVideoStates(user.id, body).
+        this.dbService.upsertVideoStates(user.id, JSON.parse(body)).
           then(resolve).
           catch(reject);
       });
